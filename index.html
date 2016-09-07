@@ -1,77 +1,105 @@
-<html>
+﻿<html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <link type="text/css" href="js/screen.css" rel="stylesheet">
-  <link type="text/css" href="js/jquery-ui.css" rel="stylesheet">
-<style>
-    html, body {
-          height: 100%;
-          width: 100%;
-          margin: 0px;
-          padding: 0px;
-    }
-    
-    #progressbar {
-        position: absolute;
-        height: 20px;
-        background-color: red;
-        width: 0px;
-        bottom: 0px;
-        display: block;
-        left: 0px;
-    }
-    
-    #play {
-        position: absolute;
-        left: 40%;
-        width: 20%;
-        top: 30%;
-        display: none;
-        cursor: pointer;
-    }
-    #play.active {
-        display: block;
-    }
-    #volume {
-        position: absolute;
-    }
-    #volume_on, #volume_off {
-        display: none;
-        cursor: pointer;
-    }
-    #volume_on.active, #volume_off.active {
-        display: block;
-    }
-</style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link type="text/css" href="js/screen.css" rel="stylesheet">
+    <meta name="viewport" content="width=608">
+    <link href="js/jquery-ui.css" rel="stylesheet" type="text/css">
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0px;
+        }
+        
+        .broadway {
+            width: 100%;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #progressbar {
+            position: absolute;
+            height: 5px;
+            background-color: white;
+            width: 0;
+            bottom: 0px;
+            display: block;
+            left: 0px;
+        }
+
+        #play {
+            position: absolute;
+            left: 40%;
+            width: 20%;
+            top: 30%;
+            display: none;
+            cursor: pointer;
+        }
+
+            #play.active {
+                display: block;
+            }
+
+        #volume {
+            position: absolute;
+        }
+        
+        #close {
+            position: absolute;
+            right: 0px;
+            top: 0px;
+        }
+        #close_img {
+            display: block;
+            cursor: pointer;
+            width:  30px;
+            height:  30px;
+        }
+
+        #volume_on, #volume_off {
+            display: none;
+            cursor: pointer;
+            width:  30px;
+            height:  30px;
+        }
+
+            #volume_on.active, #volume_off.active {
+                display: block;
+            } 
+    </style>
 </head>
 <body>
-  
 
-        <div class="broadway" src="move.mp4" width="300" height="169" style="float: left; position: relative;" workers="true" webgl="auto" render="false">
 
-        </div>
-  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-  <script type="text/javascript" src="js/Decoder.js"></script>
-  <script type="text/javascript" src="js/YUVCanvas.js"></script>
-  <script type="text/javascript" src="js/Player.js"></script>  
-  <script type="text/javascript" src="js/stream.js"></script>  
-  <script type="text/javascript" src="js/mp4.js"></script>
-      <script type="text/javascript">
-          function load() {
-              jQuery(document).ready(function () {
-                  try {
-                      console.log(Broadway);
-                      var nodes = document.querySelectorAll('div.broadway');
-                      for (var i = 0; i < nodes.length; i++) {
-                          var broadway = new Broadway(nodes[i]);
-                      }
+    <div class="broadway" src="video.mp4" width="300" height="169" style="float: left; position: relative;" workers="true" webgl="auto" render="false">
 
-                  } catch (ex) {
-                      console.log(ex);
-                  }
-              });
-          }
-          load();
-  </script>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="js/Decoder.js"></script>
+    <script type="text/javascript" src="js/YUVCanvas.js"></script>
+    <script type="text/javascript" src="js/Player.js"></script>
+    <script type="text/javascript" src="js/stream.js"></script>
+    <script type="text/javascript" src="https://probtnlandings1.azurewebsites.net/button_example4/mp4_player/js/mp4.js"></script>
+    <script type="text/javascript">
+        function load() {
+            jQuery(document).ready(function () {
+                try {
+                    console.log(Broadway);
+                    var nodes = document.querySelectorAll('div.broadway');
+                    for (var i = 0; i < nodes.length; i++) {
+                        var broadway = new Broadway(nodes[i]);
+                    }
 
-</body></html>
+                } catch (ex) {
+                    console.log(ex);
+                }
+            });
+        }
+        load();
+    </script>
+
+</body>
+</html>

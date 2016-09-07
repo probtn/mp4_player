@@ -833,15 +833,7 @@ var MP4Player = (function reader() {
             var width = options.width || canvasObj.canvas.width;
             var height = options.height || canvasObj.canvas.height;
 
-            //create progressbar if don't exist
-            /*if ($('.broadway #progressbar').length > 0) {
-
-            } else {
-                $("<div/>", {
-                    id: "progressbar"
-                }).appendTo($('.broadway'));
-            }*/
-
+            width = $(".broadway canvas").width();
             var step = width / window.VideoFramesCount;
 
             $("#progressbar").css("width", (window.VideoFramesCounter * step) + "px");
@@ -934,8 +926,10 @@ var MP4Player = (function reader() {
             if (window.player_pause) {
                 window.player_pause = false;
                 play_button.setAttribute("class", "");
+                window.PictureWorks = false;
             } else {
                 window.player_pause = true;
+                window.PictureWorks = true;
                 play_button.setAttribute("class", "active");
             }
             console.log("pause", window.player_pause);
@@ -981,6 +975,16 @@ var Broadway = (function broadway() {
         this.volume_off.setAttribute("id", "volume_off");
         this.volume_off.setAttribute("src", "images/volume-off.png");
         this.volume.appendChild(this.volume_off);
+
+        this.close = document.createElement('div');
+        this.close.setAttribute("id", "close");
+        controls.appendChild(this.close);
+
+        this.close_img = document.createElement('img');
+        this.close_img.setAttribute("id", "close_img");
+        this.close_img.setAttribute("src", "https://probtnlandings1.azurewebsites.net/button_example4/mp4_player/images/close.png");
+        this.close_img.setAttribute("class", "active");
+        this.close.appendChild(this.close_img);
 
         this.play_button = document.createElement('img');
         this.play_button.setAttribute("id", "play");
@@ -1035,6 +1039,11 @@ var Broadway = (function broadway() {
                 console.log("pauseVideo clicked");
                 pauseflag = true;
                 setTimeout(function () { pauseflag = false; }, 600);
+
+                if (audioClicked) {
+                    toggleAudio(self);
+                }
+
                 if (!pauseClicked) {
                     pauseClicked = true;
                     self.pause();
@@ -1051,7 +1060,7 @@ var Broadway = (function broadway() {
         function toggleAudio(self) {
             if (!toggleAudioFlag) {
                 toggleAudioFlag = true;
-                setTimeout(function () { toggleAudioFlag = false; }, 400);
+                setTimeout(function () { toggleAudioFlag = false; }, 700);
             if (!audioClicked) {
                 audioClicked = true;
                 console.log("play audio");
@@ -1094,6 +1103,19 @@ var Broadway = (function broadway() {
         }.bind(this), false);
         this.volume.addEventListener('click', function () {
             toggleAudio(this);
+        }.bind(this), false);
+
+        function closeVideo(self) {
+            console.log("close video");
+            window.top.postMessage({ command: 'probtn_close' }, "*");
+            self.audio.pause();
+        }
+
+        this.close.addEventListener('touchstart', function () {
+            closeVideo(this);
+        }.bind(this), false);
+        this.close.addEventListener('click', function () {
+            closeVideo(this);
         }.bind(this), false);
 
 

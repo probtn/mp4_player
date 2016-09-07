@@ -99,7 +99,7 @@ p.decode(<binary>);
         var lastWidth;
         var lastHeight;
         var onPictureDecoded = function (buffer, width, height, infos) {
-            if ((window.StartTimeDuration === undefined) || (window.StartTimeDuration === null)) {
+            if (((window.StartTimeDuration === undefined) || (window.StartTimeDuration === null)) && (!window.player_pause)) {
                 window.StartTimeDuration = Date.now();
             }
 
@@ -208,13 +208,13 @@ p.decode(<binary>);
                         if (window.PictureBuffer.length > 0) {
                             window.PictureWorks = true;
                             var data2 = window.PictureBuffer.shift(); ///shift();
-
                             try {
                                 onPictureDecoded.call(self, new Uint8Array(data2.buf, 0, data2.length), data2.width, data2.height, data2.infos);
                             } catch (ex) {
                             }
                         }
                     } else {
+                        window.PictureWorks = true;
                         window.PrevStartTime = Date.now();
                     }
                 }
