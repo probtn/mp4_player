@@ -332,7 +332,7 @@ var MP4Reader = (function reader() {
                     console.log("this.tracks[box.tkhd.trackId]", this.tracks[box.tkhd.trackId]);
                     console.log("VideoFramesCount", window.VideoFramesCount);
                     console.log("VideoTimeScale", window.VideoTimeScale);
-
+                    console.log("VideoTotalTime", window.VideoTotalTime);
                     break;
                 case 'tkhd':
                     box.name = "Track Header Box";
@@ -945,6 +945,35 @@ var Broadway = (function broadway() {
         var width = div.attributes.width ? div.attributes.width.value : 640;
         var height = div.attributes.height ? div.attributes.height.value : 480;
 
+        var posterPath = div.attributes.poster ? div.attributes.poster.value : "poster.png";
+        var audioPath = div.attributes.audio ? div.attributes.audio.value : "audio.mp3";
+
+        //poster image to show before load
+        var poster = document.createElement('div');
+        poster.setAttribute("id", "poster");
+
+        var poster_img = document.createElement('img');
+        poster_img.setAttribute("src", posterPath);
+        poster_img.setAttribute("id", "poster_img");
+
+        poster.appendChild(poster_img);
+
+        var poster_loader = document.createElement('img');
+        poster_loader.setAttribute("src", "loader.gif");
+        poster_loader.setAttribute("id", "loader");
+
+        poster.appendChild(poster_loader);
+        
+        //TODO
+        //set image path as param
+        div.appendChild(poster);
+        this.poster = poster;
+
+        var bg = document.createElement('div');
+        bg.setAttribute('id', 'bg');
+        div.appendChild(bg);
+        this.bg = bg;
+
         var controls = document.createElement('div');
         //controls.setAttribute('style', "z-index: 100; position: absolute; bottom: 0px; background-color: rgba(0,0,0,0.8); height: 30px; width: 100%; text-align: left;");
         /*this.info = document.createElement('div');
@@ -960,6 +989,10 @@ var Broadway = (function broadway() {
         this.progressbar.setAttribute("id", "progressbar");
         controls.appendChild(this.progressbar);
 
+        this.link = document.createElement('div');
+        this.link.setAttribute("id", "link");
+        this.link.innerHTML = "probtn.com";
+        controls.appendChild(this.link);
 
         this.volume = document.createElement('div');
         this.volume.setAttribute("id", "volume");
@@ -967,13 +1000,13 @@ var Broadway = (function broadway() {
 
         this.volume_on = document.createElement('img');
         this.volume_on.setAttribute("id", "volume_on");
-        this.volume_on.setAttribute("src", "images/volume-on.png");
+        this.volume_on.setAttribute("src", "images/volume-on-min.png");
         this.volume_on.setAttribute("class", "active");
         this.volume.appendChild(this.volume_on);
 
         this.volume_off = document.createElement('img');
         this.volume_off.setAttribute("id", "volume_off");
-        this.volume_off.setAttribute("src", "images/volume-off.png");
+        this.volume_off.setAttribute("src", "images/volume-off-min.png");
         this.volume.appendChild(this.volume_off);
 
         this.close = document.createElement('div');
@@ -982,13 +1015,13 @@ var Broadway = (function broadway() {
 
         this.close_img = document.createElement('img');
         this.close_img.setAttribute("id", "close_img");
-        this.close_img.setAttribute("src", "https://probtnlandings1.azurewebsites.net/button_example4/mp4_player/images/close.png");
+        this.close_img.setAttribute("src", "images/close-min.png");
         this.close_img.setAttribute("class", "active");
         this.close.appendChild(this.close_img);
 
         this.play_button = document.createElement('img');
         this.play_button.setAttribute("id", "play");
-        this.play_button.setAttribute("src", "images/play.png");
+        this.play_button.setAttribute("src", "images/play-min.png");
         controls.appendChild(this.play_button);
 
 
@@ -998,7 +1031,7 @@ var Broadway = (function broadway() {
         controls.appendChild(this.audio);
 
         this.source = document.createElement('source');
-        this.source.setAttribute("src", "audio.mp3");
+        this.source.setAttribute("src", audioPath);
         this.source.setAttribute("type", "audio/mpeg");
         this.audio.appendChild(this.source);
 
@@ -1045,9 +1078,10 @@ var Broadway = (function broadway() {
                 }
 
                 if (!pauseClicked) {
-                    pauseClicked = true;
+                    pauseClicked = true;                    
                     self.pause();
                 } else {
+                    toggleAudio(self);
                     pauseClicked = false;
                     self.pause();
                 }
@@ -1065,6 +1099,10 @@ var Broadway = (function broadway() {
                 audioClicked = true;
                 console.log("play audio");
 
+                self.volume_on.setAttribute("class", "");
+                self.volume_off.setAttribute("class", "active");
+                
+
                 var duration = window.VideoTotalTime * 1000;
 
                 var position = duration * (window.VideoFramesCounter/ window.VideoFramesCount) / 1000;
@@ -1076,6 +1114,9 @@ var Broadway = (function broadway() {
                 console.log("pause audio");
 
                 self.audio.pause();
+
+                self.volume_on.setAttribute("class", "active");
+                self.volume_off.setAttribute("class", "");
             }
             }
         }
@@ -1109,6 +1150,9 @@ var Broadway = (function broadway() {
             console.log("close video");
             window.top.postMessage({ command: 'probtn_close' }, "*");
             self.audio.pause();
+            window.player_pause = true;
+            window.PictureWorks = true;
+            self.play_button.setAttribute("class", "active");
         }
 
         this.close.addEventListener('touchstart', function () {
@@ -1116,6 +1160,14 @@ var Broadway = (function broadway() {
         }.bind(this), false);
         this.close.addEventListener('click', function () {
             closeVideo(this);
+        }.bind(this), false);
+
+        this.link.addEventListener('touchstart', function () {
+            window.open("https://probtn.com", "_blank");
+        }.bind(this), false);
+
+        this.link.addEventListener('click', function () {
+            window.open("https://probtn.com", "_blank");
         }.bind(this), false);
 
 
@@ -1166,15 +1218,25 @@ var Broadway = (function broadway() {
             }
             // info += " score: " + this.score;
 
+            //console.log(info);
             //this.info.innerHTML = infoStr + info;
         }.bind(this);
     }
     constructor.prototype = {
         play: function () {
+            /*try {
+                this.poster.setAttribute('style', "display: none;");
+            } catch (ex) {
+                console.log(ex);
+            }*/
             this.player.play();
+
+            window.top.postMessage({ command: 'probtn_start_content_showed_timer' }, "*");
         },
         pause: function () {
             this.player.pause(this.play_button);
+
+            window.top.postMessage({ command: 'probtn_stop_content_showed_timer' }, "*");
         }
     };
     return constructor;

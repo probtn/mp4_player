@@ -99,6 +99,9 @@ p.decode(<binary>);
         var lastWidth;
         var lastHeight;
         var onPictureDecoded = function (buffer, width, height, infos) {
+
+            document.getElementById("poster").setAttribute('style', "display: none;");
+
             if (((window.StartTimeDuration === undefined) || (window.StartTimeDuration === null)) && (!window.player_pause)) {
                 window.StartTimeDuration = Date.now();
             }
