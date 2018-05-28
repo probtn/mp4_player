@@ -16,7 +16,7 @@ function assert(condition, message) {
 };
 
 /**
- * Represents a 2-dimensional size value. 
+ * Represents a 2-dimensional size value.
  */
 var Size = (function size() {
     function constructor(w, h) {
@@ -36,10 +36,6 @@ var Size = (function size() {
     };
     return constructor;
 })();
-
-
-
-
 
 var Bytestream = (function BytestreamClosure() {
     function constructor(arrayBuffer, start, length) {
@@ -723,7 +719,7 @@ var Track = (function track() {
             var total = this.getTotalTimeInSeconds();
             for (var i = 50; i < total; i += 0.1) {
               // console.info("Time: " + i.toFixed(2) + " " + this.secondsToTime(i));
-      
+
               console.info("Time: " + i.toFixed(2) + " " + this.timeToSample(this.secondsToTime(i)));
             }
             */
@@ -963,7 +959,7 @@ var Broadway = (function broadway() {
         poster_loader.setAttribute("id", "loader");
 
         poster.appendChild(poster_loader);
-        
+
         //TODO
         //set image path as param
         div.appendChild(poster);
@@ -1063,27 +1059,113 @@ var Broadway = (function broadway() {
         this.player = new MP4Player(new Stream(src), useWorkers, webgl, render);
         this.canvas = this.player.canvas;
 
+        var repeatmode = undefined;
+        if (div.attributes.repeatmode !== undefined)
+        {
+          repeatmode = div.attributes.repeatmode.value;
+        }
+
+        var vpixels = null;
+
+        if (div.attributes.videopixels !== undefined)
+        {
+          vpixels = JSON.parse(div.attributes.videopixels.value);
+
+          var intervalVP = null;
+          var curVideoPixel = null;
+
+          var randomString = function(length) {
+            return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
+          };
+
+          var createClickCounterImage = function (path, name)
+          {
+            try {
+              var currentName = randomString(12);
+              if ((name !== null) && (name !== undefined)) {
+                currentName = name;
+              }
+
+              var pixel_img = document.createElement('img');
+              pixel_img.setAttribute("src", path);
+              pixel_img.setAttribute("id", "clickCounterLink_" + currentName);
+              pixel_img.setAttribute("style", "width: 1px; height: 1px; position: absolute; left: -10001px; top: -10001px;");
+              div.appendChild(pixel_img);
+
+            } catch (ex) {
+              console.log(ex);
+            }
+          };
+
+          intervalVP = setInterval(
+            function()
+            {
+              var videoPosition = window.VideoFramesCounter / window.VideoFramesCount;
+              var checkVideoPeriods = function(currentIndex, vpixels, callback) {
+              vpixels.forEach(function(vpixel, index) {
+                if ((videoPosition > vpixel.StartPosition) && (videoPosition < vpixel.EndPosition)) {
+                  if (currentIndex !== index) {
+                    console.log("pos", videoPosition);
+                    callback(vpixel, index);
+                    return;
+                  }
+                }
+              });
+            }
+
+            checkVideoPeriods(curVideoPixel, vpixels, function(vpixel, index) {
+              try {
+                createClickCounterImage(vpixel.TrackingLink);
+              } catch (ex) {
+                console.log(ex);
+              }
+
+              curVideoPixel = index;
+            });
+            }, 500);
+
+        }
+
         var pauseClicked = false;
         var pauseflag = false;
         var audioClicked = false;
+        var isVideoFinished = false;
+        var isAudioOn = false;
 
         function pauseVideo(self) {
+          if (isVideoFinished)
+          {
+
+            if (repeatmode === "hand")
+            {
+              isVideoFinished = false;
+              self.play_button.setAttribute("src", "images/play-min.png");
+              self.play_button.setAttribute("class", " ");
+              self.play();
+              toggleAudio(self);
+              return;
+            }
+          }
             if (!pauseflag) {
-                console.log("pauseVideo clicked");
+                //console.log("pauseVideo clicked");
                 pauseflag = true;
                 setTimeout(function () { pauseflag = false; }, 600);
 
-                if (audioClicked) {
+              /*  if (audioClicked) {
                     toggleAudio(self);
-                }
+                }*/
 
                 if (!pauseClicked) {
-                    pauseClicked = true;                    
+                    pauseClicked = true;
                     self.pause();
                 } else {
-                    toggleAudio(self);
+
                     pauseClicked = false;
                     self.pause();
+                    toggleAudio(self);
+                }
+                if (isAudioOn) {
+                    toggleAudio(self);
                 }
                 console.log("pauseClicked", pauseClicked);
             }
@@ -1095,13 +1177,13 @@ var Broadway = (function broadway() {
             if (!toggleAudioFlag) {
                 toggleAudioFlag = true;
                 setTimeout(function () { toggleAudioFlag = false; }, 700);
-            if (!audioClicked) {
-                audioClicked = true;
+            if (isAudioOn && !pauseClicked) {
+                //audioClicked = true;
                 console.log("play audio");
 
                 self.volume_on.setAttribute("class", "");
                 self.volume_off.setAttribute("class", "active");
-                
+
 
                 var duration = window.VideoTotalTime * 1000;
 
@@ -1110,7 +1192,7 @@ var Broadway = (function broadway() {
                 console.log("play position", position);
                 self.audio.play();
             } else {
-                audioClicked = false;
+                //audioClicked = false;
                 console.log("pause audio");
 
                 self.audio.pause();
@@ -1140,9 +1222,11 @@ var Broadway = (function broadway() {
 
 
         this.volume.addEventListener('touchstart', function () {
+          isAudioOn = !isAudioOn;
             toggleAudio(this);
         }.bind(this), false);
         this.volume.addEventListener('click', function () {
+          isAudioOn = !isAudioOn;
             toggleAudio(this);
         }.bind(this), false);
 
@@ -1182,13 +1266,29 @@ var Broadway = (function broadway() {
             window.VideoFramesCounter = 0;
             window.StartTimeDuration = undefined;
 
-            if (audioClicked) {
+         if (isAudioOn)
+         {
                 this.audio.pause();
                 this.audio.currentTime = 0;
-                this.audio.play();
-            }
+              //  this.audio.play();
+          }
+
+          if (repeatmode === "hand")
+          {
+            isVideoFinished = true;
+            this.play_button.setAttribute("src", "images/replay.png");
+            this.play_button.setAttribute("class", "active");
+          }
             // e.target matches document from above
+          if ((repeatmode !== "off") && (repeatmode !== "hand"))
+          {
+            if (isAudioOn)
+            {
+              this.audio.play();
+            }
+
             self.play();
+          }
         }.bind(this), false);
 
         div.appendChild(this.canvas);
