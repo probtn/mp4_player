@@ -804,7 +804,6 @@ var MP4Player = (function reader() {
     };
 
     this.onStatisticsUpdated = function() {};
-
     this.avc = new Player({
 
       useWorker: useWorkers,
@@ -827,18 +826,10 @@ var MP4Player = (function reader() {
     var topCanvas = this.avc.canvas;
 
     this.avc.onRenderFrameComplete = function(options) {
-      var canvasObj = options.canvasObj;
-
-      var width = options.width || canvasObj.canvas.width;
-      var height = options.height || canvasObj.canvas.height;
-
-      width = document.getElementsByTagName('canvas')[0].offsetWidth; //$(".broadway canvas").width();
-      //console.log("width1", width, document.getElementsByTagName('canvas')[0].offsetWidth);
-      var step = width / window.VideoFramesCount;
-
-      //$("#progressbar").css("width", (window.VideoFramesCounter * step) + "px");
-      document.getElementById("progressbar").style.width = (window.VideoFramesCounter * step) + "px";
-      //console.log("progress bar width", document.getElementById("progressbar").style.width);
+      var position = window.VideoTotalTime * (window.VideoFramesCounter / window.VideoFramesCount);
+      var min = Math.floor(position / 60);
+      var sec = Math.floor(position % 60);
+      document.getElementById("videotime").value = min + ":" + sec;
     };
 
     this.canvas = this.avc.canvas;
@@ -990,9 +981,13 @@ var Broadway = (function broadway() {
     this.info.setAttribute('style', "display: none;");
     controls.appendChild(this.info);
 
-    this.progressbar = document.createElement('div');
+  /*  this.progressbar = document.createElement('div');
     this.progressbar.setAttribute("id", "progressbar");
-    controls.appendChild(this.progressbar);
+    controls.appendChild(this.progressbar); */
+
+    this.videoTime = document.createElement('output');
+    this.videoTime.setAttribute("id", "videotime");
+    controls.appendChild(this.videoTime);
 
     this.link = document.createElement('div');
     this.link.setAttribute("id", "link");
@@ -1005,13 +1000,13 @@ var Broadway = (function broadway() {
 
     this.volume_on = document.createElement('img');
     this.volume_on.setAttribute("id", "volume_on");
-    this.volume_on.setAttribute("src", "images/volume-off-min.png?r=1");
-    this.volume_on.setAttribute("class", "active");
+    this.volume_on.setAttribute("src", "images/volume_on@2x.png?r=1");
     this.volume.appendChild(this.volume_on);
 
     this.volume_off = document.createElement('img');
     this.volume_off.setAttribute("id", "volume_off");
-    this.volume_off.setAttribute("src", "images/volume-on-min.png?r=1");
+    this.volume_off.setAttribute("src", "images/volume_off@2x.png?r=1");
+    this.volume_off.setAttribute("class", "active");
     this.volume.appendChild(this.volume_off);
 
     this.close = document.createElement('div');
@@ -1092,7 +1087,7 @@ var Broadway = (function broadway() {
 
       if (div.attributes.videopixels !== undefined) {
         vpixels = JSON.parse(div.attributes.videopixels.value);
-      }      
+      }
 
       var intervalVP = null;
       var curVideoPixel = null;
@@ -1145,12 +1140,12 @@ var Broadway = (function broadway() {
 
         //send video parts event
         checkVideoPeriods(currentVideoPart, quarters, function (vpixel, index) {
-          var duration = window.VideoTotalTime; 
+          var duration = window.VideoTotalTime;
 
-          window.top.postMessage({ 
-            command: 'probtn_video_part_event', 
-            videoFullDuration: duration.toFixed(2), 
-            videoPart: index 
+          window.top.postMessage({
+            command: 'probtn_video_part_event',
+            videoFullDuration: duration.toFixed(2),
+            videoPart: index
           }, '*');
 
           currentVideoPart = index;
@@ -1206,8 +1201,8 @@ var Broadway = (function broadway() {
       if (isAudioPlay && !pauseClicked) {
         console.log("play audio");
 
-        self.volume_on.setAttribute("class", "");
-        self.volume_off.setAttribute("class", "active");
+        self.volume_off.setAttribute("class", "");
+        self.volume_on.setAttribute("class", "active");
 
         var duration = window.VideoTotalTime * 1000;
 
@@ -1224,8 +1219,8 @@ var Broadway = (function broadway() {
 
         self.audio.pause();
 
-        self.volume_on.setAttribute("class", "active");
-        self.volume_off.setAttribute("class", "");
+        self.volume_off.setAttribute("class", "active");
+        self.volume_on.setAttribute("class", "");
       }
     }
 
@@ -1237,8 +1232,8 @@ var Broadway = (function broadway() {
             var duration = window.VideoTotalTime * 1000;
 
             var position = duration * (window.VideoFramesCounter / window.VideoFramesCount) / 1000;
-            
-            if (Math.abs(self.audio.currentTime - position)>3) { 
+
+            if (Math.abs(self.audio.currentTime - position)>3) {
               self.audio.currentTime = position;
               console.log("position", position, self.audio.currentTime);
             } else {
@@ -1287,8 +1282,8 @@ var Broadway = (function broadway() {
         if (isAudioPlay && !pauseClicked) {
           console.log("play audio");
 
-          self.volume_on.setAttribute("class", "");
-          self.volume_off.setAttribute("class", "active");
+          self.volume_off.setAttribute("class", "");
+          self.volume_on.setAttribute("class", "active");
 
           var duration = window.VideoTotalTime * 1000;
 
@@ -1304,8 +1299,8 @@ var Broadway = (function broadway() {
 
           self.audio.pause();
 
-          self.volume_on.setAttribute("class", "active");
-          self.volume_off.setAttribute("class", "");
+          self.volume_off.setAttribute("class", "active");
+          self.volume_on.setAttribute("class", "");
 
           stopCorrectAudio();
         }
@@ -1322,8 +1317,8 @@ var Broadway = (function broadway() {
         if (isAudioPlay && !pauseClicked) {
           console.log("play audio");
 
-          self.volume_on.setAttribute("class", "");
-          self.volume_off.setAttribute("class", "active");
+          self.volume_off.setAttribute("class", "");
+          self.volume_on.setAttribute("class", "active");
 
           var duration = window.VideoTotalTime * 1000;
 
@@ -1339,8 +1334,8 @@ var Broadway = (function broadway() {
 
           self.audio.pause();
 
-          self.volume_on.setAttribute("class", "active");
-          self.volume_off.setAttribute("class", "");
+          self.volume_off.setAttribute("class", "active");
+          self.volume_on.setAttribute("class", "");
 
           stopCorrectAudio();
         }

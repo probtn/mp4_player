@@ -92,3 +92,11 @@ body {
     color: #16C0F0;
     margin-bottom: 4px;
 }
+
+canvas {
+  border-radius: 2px;
+}
+
+#videotime {
+  color: white;
+}
