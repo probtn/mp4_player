@@ -829,6 +829,11 @@ var MP4Player = (function reader() {
       var position = window.VideoTotalTime * (window.VideoFramesCounter / window.VideoFramesCount);
       var min = Math.floor(position / 60);
       var sec = Math.floor(position % 60);
+      if (sec < 10)
+      {
+          sec = "0" + sec;
+      }
+
       document.getElementById("videotime").value = min + ":" + sec;
     };
 
@@ -1392,7 +1397,13 @@ var Broadway = (function broadway() {
         this.play_button.setAttribute("class", "active");
       }
         // e.target matches document from above
-      if ((repeatmode !== "off") && (repeatmode !== "hand"))
+        if (repeatmode === "close")
+        {
+          console.log("close video");
+          window.top.postMessage({ command: 'probtn_close' }, "*");
+        }
+
+      if ((repeatmode !== "off") && (repeatmode !== "hand") && (repeatmode !== "close"))
       {
         if (isAudioPlay)
         {
@@ -1402,8 +1413,8 @@ var Broadway = (function broadway() {
         self.play();
       }
 
-      // e.target matches document from above
-      // self.play();
+
+
     }.bind(this), false);
 
     window.addEventListener('message', function(event) {
