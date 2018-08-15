@@ -100,6 +100,7 @@ p.decode(<binary>);
         var lastHeight;
         var onPictureDecoded = function (buffer, width, height, infos) {
 
+            document.dispatchEvent(window.broadway_video_started_event);
             document.getElementById("poster").setAttribute('style', "display: none;");
 
             if (((window.StartTimeDuration === undefined) || (window.StartTimeDuration === null)) && (!window.player_pause)) {

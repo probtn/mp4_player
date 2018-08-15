@@ -3,6 +3,8 @@
 window.broadway_video_ended_event = document.createEvent('Event');
 window.broadway_video_ended_event.initEvent('broadway_video_ended', true, true);
 
+window.broadway_video_started_event = document.createEvent('Event');
+window.broadway_video_started_event.initEvent('broadway_video_started', true, true);
 
 function assert(condition, message) {
   if (!condition) {
@@ -833,7 +835,6 @@ var MP4Player = (function reader() {
       {
           sec = "0" + sec;
       }
-
       document.getElementById("videotime").value = min + ":" + sec;
     };
 
@@ -1069,12 +1070,23 @@ var Broadway = (function broadway() {
     console.log("render", render);
     this.player = new MP4Player(new Stream(src), useWorkers, webgl, render);
     this.canvas = this.player.canvas;
+    this.canvas.setAttribute("id", "canvas");
 
     var repeatmode = undefined;
     if (div.attributes.repeatmode !== undefined)
     {
       repeatmode = div.attributes.repeatmode.value;
     }
+
+    this.probtnevents = false;
+    if (div.attributes.probtnevents !== undefined)
+    {
+      try {
+        this.probtnevents = JSON.parse(div.attributes.probtnevents.value);
+      } catch(ex) {
+      }
+    }
+    console.log("this.probtnevents", this.probtnevents);
 
     var vpixels = [];
 
@@ -1147,11 +1159,13 @@ var Broadway = (function broadway() {
         checkVideoPeriods(currentVideoPart, quarters, function (vpixel, index) {
           var duration = window.VideoTotalTime;
 
-          window.top.postMessage({
-            command: 'probtn_video_part_event',
-            videoFullDuration: duration.toFixed(2),
-            videoPart: index
-          }, '*');
+          if (this.probtnevents == true) {
+              window.top.postMessage({
+                command: 'probtn_video_part_event',
+                videoFullDuration: duration.toFixed(2),
+                videoPart: index
+              }, '*');
+          }
 
           currentVideoPart = index;
         });
@@ -1349,7 +1363,9 @@ var Broadway = (function broadway() {
 
     function closeVideo(self) {
       console.log("close video");
-      window.top.postMessage({ command: 'probtn_close' }, "*");
+      if (this.probtnevents == true) {
+        window.top.postMessage({ command: 'probtn_close' }, "*");
+      }
       self.audio.pause();
       window.player_pause = true;
       window.PictureWorks = true;
@@ -1364,14 +1380,18 @@ var Broadway = (function broadway() {
     }.bind(this), false);
 
     this.link.addEventListener('touchstart', function() {
-      window.top.postMessage({ command: 'probtn_opened_and_showed' }, '*');
-      window.top.postMessage({ command: 'probtn_close' }, '*');
+      if (this.probtnevents == true) {
+        window.top.postMessage({ command: 'probtn_opened_and_showed' }, '*');
+        window.top.postMessage({ command: 'probtn_close' }, '*');
+      }
       window.open(url, "_blank");
     }.bind(this), false);
 
     this.link.addEventListener('click', function() {
-      window.top.postMessage({ command: 'probtn_opened_and_showed' }, '*');
-      window.top.postMessage({ command: 'probtn_close' }, '*');
+      if (this.probtnevents == true) {
+        window.top.postMessage({ command: 'probtn_opened_and_showed' }, '*');
+        window.top.postMessage({ command: 'probtn_close' }, '*');
+      }
       window.open(url, "_blank");
     }.bind(this), false);
 
@@ -1397,13 +1417,7 @@ var Broadway = (function broadway() {
         this.play_button.setAttribute("class", "active");
       }
         // e.target matches document from above
-        if (repeatmode === "close")
-        {
-          console.log("close video");
-          window.top.postMessage({ command: 'probtn_close' }, "*");
-        }
-
-      if ((repeatmode !== "off") && (repeatmode !== "hand") && (repeatmode !== "close"))
+      if ((repeatmode !== "off") && (repeatmode !== "hand"))
       {
         if (isAudioPlay)
         {
@@ -1413,8 +1427,8 @@ var Broadway = (function broadway() {
         self.play();
       }
 
-
-
+      // e.target matches document from above
+      // self.play();
     }.bind(this), false);
 
     window.addEventListener('message', function(event) {
@@ -1467,13 +1481,18 @@ var Broadway = (function broadway() {
           console.log(ex);
       }*/
       this.player.play();
+      console.log("play this.probtnevents", this.probtnevents);
 
+      if (this.probtnevents == true) {
       window.top.postMessage({ command: 'probtn_start_content_showed_timer' }, "*");
+      }
     },
     pause: function() {
       this.player.pause(this.play_button);
 
+      if (this.probtnevents == true) {
       window.top.postMessage({ command: 'probtn_stop_content_showed_timer' }, "*");
+      }
     }
   };
   return constructor;
