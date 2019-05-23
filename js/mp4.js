@@ -788,7 +788,7 @@ var MP4Player = (function reader() {
     getBoundaryStrengthsA: "optimized"
   };
 
-  function constructor(stream, useWorkers, webgl, render) {
+  function constructor(stream, useWorkers, webgl, render, reverseTimer) {
     this.stream = stream;
     this.useWorkers = useWorkers;
     this.webgl = webgl;
@@ -820,6 +820,7 @@ var MP4Player = (function reader() {
     this.webgl = this.avc.webgl;
 
     var self = this;
+
     this.avc.onPictureDecoded = function() {
 
       updateStatistics.call(self);
@@ -829,6 +830,10 @@ var MP4Player = (function reader() {
 
     this.avc.onRenderFrameComplete = function(options) {
       var position = window.VideoTotalTime * (window.VideoFramesCounter / window.VideoFramesCount);
+      if (reverseTimer === true)
+      {
+        position = window.VideoTotalTime - position;
+      }
       var min = Math.floor(position / 60);
       var sec = Math.floor(position % 60);
       if (sec < 10)
@@ -1068,7 +1073,18 @@ var Broadway = (function broadway() {
     };
 
     console.log("render", render);
-    this.player = new MP4Player(new Stream(src), useWorkers, webgl, render);
+    console.log(111, div.attributes.reverseTimer );
+    var reverseTimer = false;
+    if (div.attributes.reverseTimer !== undefined)
+    {
+      if (div.attributes.reverseTimer.value == "true")
+      {
+        reverseTimer = true;
+      }
+    }
+
+    console.log(222, reverseTimer);
+    this.player = new MP4Player(new Stream(src), useWorkers, webgl, render, reverseTimer);
     this.canvas = this.player.canvas;
     this.canvas.setAttribute("id", "canvas");
 
@@ -1268,7 +1284,7 @@ var Broadway = (function broadway() {
     }
 
     //if ('ontouchstart' in document.documentElement) {
-    this.canvas.addEventListener('touchstart', function() {
+  /*  this.canvas.addEventListener('touchstart', function() {
       pauseVideo(this);
     }.bind(this), false);
     this.play_button.addEventListener('touchstart', function() {
@@ -1280,7 +1296,7 @@ var Broadway = (function broadway() {
     }.bind(this), false);
     this.play_button.addEventListener('click', function() {
       pauseVideo(this);
-    }.bind(this), false);
+    }.bind(this), false); */
 
 
     /*this.volume.addEventListener('touchstart', function () {
