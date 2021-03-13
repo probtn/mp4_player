@@ -1,0 +1,445 @@
+﻿<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link type="text/css" href="js/screen.css" rel="stylesheet" />
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <meta name="viewport" content="width=608" />
+    <link href="js/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <style>
+      html {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        height: 100%;
+      }
+
+      .broadway {
+        width: 480px;
+        height: 270px;
+      }
+
+      canvas {
+        width: 480px;
+        height: 270px;
+      }
+
+      #progressbar {
+        position: absolute;
+        height: 5px;
+        background-color: white;
+        width: 0;
+        bottom: 0px;
+        display: block;
+        left: 0px;
+      }
+
+      #poster {
+        width: 480px;
+        height: 270px;
+        display: inline-block;
+        z-index: 20;
+      }
+
+      #poster_img {
+        width: 480px;
+        height: 270px;
+        z-index: 18;
+      }
+
+      #loader {
+        display: none;
+        margin: 0 auto;
+        width: 20%;
+        z-index: 19;
+        position: fixed;
+        /*top: 50%;
+            left: 40%;*/
+
+        top: 150px;
+        left: 140px;
+      }
+
+      #play {
+        position: absolute;
+        left: 40%;
+        width: 20%;
+        top: 30%;
+        display: none;
+        cursor: pointer;
+      }
+
+      #play.active {
+        display: block;
+      }
+
+      #volume,
+      #native_volume {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        width: 55px;
+        height: 55px;
+        z-index: 300;
+        /*display: none;*/
+      }
+
+      #close {
+        position: absolute;
+        right: 5px;
+        bottom: 8px;
+        z-index: 30;
+        /*display: none;*/
+      }
+
+      #close_img {
+        display: none;
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+      }
+
+      #volume_on,
+      #volume_off,
+      #native_volume_on,
+      #native_volume_off {
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        z-index: 30;
+        padding-top: 22px;
+        padding-left: 8px;
+        display: none;
+      }
+
+      #native_volume_on.active,
+      #native_volume_off.active {
+        display: block;
+      }
+
+      #volume_on.active,
+      #volume_off.active {
+        display: block;
+      }
+
+      #native_video_poster {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 480px;
+        height: auto;
+        z-index: 200;
+      }
+
+      #native_video {
+        position: relative;
+        width: 480px;
+        height: 270px;
+        z-index: 10;
+        border-radius: 4px;
+        opacity: 0;
+      }
+
+      #native_video_wrapper {
+        position: relative;
+      }
+
+      canvas {
+        border-radius: 4px !important;
+        background: transparent !important;
+      }
+
+      #link {
+        background: url(images/go-min.png) no-repeat left center;
+        width: 50%;
+        height: 28px;
+        position: absolute;
+        bottom: 10px;
+        left: 25%;
+        color: white;
+        font-size: 20px;
+        padding-left: 30px;
+        text-shadow: 2px 1px 5px black;
+        display: none;
+        z-index: 30;
+        background-size: contain;
+        font-weight: normal;
+        font-family: Arial;
+        display: none !important;
+      }
+
+      #replay_button {
+        position: absolute;
+        left: 40%;
+        width: 20%;
+        top: 30%;
+        display: block;
+        cursor: pointer;
+        background-image: url(images/replay.png);
+      }
+
+      #videotime,
+      #native_videotime {
+        position: absolute;
+        right: 5px;
+        bottom: 3px;
+        z-index: 300;
+        font-size: 30px;
+        font-weight: 400;
+        color: #ffffff;
+        display: none;
+      }
+
+      .img_btn_disabled {
+        display: none;
+      }
+
+      #bg {
+        height: 50px;
+        position: fixed;
+        top: 286px;
+        left: 0px;
+
+        width: 480px;
+        /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#7db9e8+0,1e5799+100&0+0,1+100 */
+      }
+
+      #cta_wrapper {
+        width: 375px;
+        height: 180px;
+        position: absolute;
+        z-index: 100;
+        top: 0px;
+        left: 0px;
+      }
+    </style>
+    <script>
+      function MyFunctions(hypeDocument, element, event) {
+        var receiveMessage = function (event) {
+          if (event.data !== null && event.data !== undefined) {
+            if (event.data.message === "probtn_resizeAnimation_step") {
+              var video_wrapper = document.getElementById(
+                "native_video_wrapper"
+              );
+              video_wrapper.style.display = "none";
+              var broadway = document.getElementById("video_broadway");
+              broadway.style.display = "none";
+              document.getElementById("index_hype_container").style.marginTop =
+                "-113px";
+              hypeDocument.showNextScene();
+              window.top.postMessage(
+                {
+                  command: "button_image_iframe_size",
+                  size: { w: "100%", h: "100%", important: true },
+                },
+                "*"
+              );
+            }
+          }
+        };
+        // run your functions that require a loaded Hype scene here.
+        window.self.addEventListener("message", receiveMessage, false);
+      }
+
+      if ("HYPE_eventListeners" in window === false) {
+        window.HYPE_eventListeners = Array();
+      }
+
+      window.HYPE_eventListeners.push({
+        type: "HypeDocumentLoad",
+        callback: MyFunctions,
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="native_video_wrapper">
+      <video
+        id="native_video"
+        playsinline=""
+        webkit-playsinline=""
+        autoplay="true"
+        muted="true"
+        onclick=""
+        poster=""
+        id="video_probtn"
+        class="probtn_video"
+        width="100%"
+        height="100%"
+      >
+        <source src="video.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      <div id="native_volume">
+        <img id="native_volume_on" src="images/volume_on@2x.png?r=1" class="" />
+        <img
+          id="native_volume_off"
+          src="images/volume_off@2x.png?r=1"
+          class="active"
+        />
+      </div>
+      <output id="native_videotime">0</output>
+      <img id="native_video_poster" src="cover.jpg" />
+    </div>
+    <div
+      id="index_hype_container"
+      style="
+        margin: auto;
+        position: relative;
+        width: 375px;
+        height: 180px;
+        overflow: hidden;
+      "
+    >
+      <script
+        type="text/javascript"
+        charset="utf-8"
+        src="index.hyperesources/index_hype_generated_script.js?55789"
+      ></script>
+    </div>
+    <div
+      class="broadway"
+      id="video_broadway"
+      url=""
+      text=""
+      audio="audio.mp3?rnd=12"
+      poster="cover.jpg"
+      src="video.mp4"
+      width="480"
+      height="270"
+      style="float: left; position: absolute; top: 0px"
+      workers="true"
+      webgl="auto"
+      render="false"
+      repeatmode="off"
+      probtnevents="false"
+      reverseTimer="true"
+    ></div>
+
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="js/Decoder.js"></script>
+    <script type="text/javascript" src="js/YUVCanvas.js"></script>
+    <script type="text/javascript" src="js/Player.js?r=12"></script>
+    <script type="text/javascript" src="js/stream.js"></script>
+    <script type="text/javascript" src="js/mp4.js?random=124"></script>
+    <script type="text/javascript">
+      jQuery(document).ready(function () {
+        var video = document.getElementById("native_video");
+
+        window.top.postMessage(
+          {
+            command: "button_image_iframe_size",
+            size: { w: "100%", h: "70%", important: true },
+          },
+          "*"
+        );
+
+        function load() {
+          window.top.postMessage(
+            {
+              command: "button_image_iframe_size",
+              size: { w: "100%", h: "70%", important: true },
+            },
+            "*"
+          );
+          jQuery(document).ready(function () {
+            try {
+              window.onresize = function (event) {
+                console.log("window.onresize", window.innerWidth);
+                if (window.innerWidth > 200) {
+                  document.getElementById("link").style.display = "block";
+                  document.getElementById("volume").style.display = "block";
+                  document.getElementById("close").style.display = "block";
+                }
+              };
+
+              console.log("Broadway", Broadway);
+              var nodes = document.querySelectorAll("div.broadway");
+              for (var i = 0; i < nodes.length; i++) {
+                var broadway = new Broadway(nodes[i]);
+              }
+            } catch (ex) {
+              console.log(ex);
+            }
+          });
+        }
+        document
+          .getElementById("native_volume")
+          .addEventListener("click", on_native_volume_click);
+
+        var isPlay = false;
+        var isSwitched = false;
+
+        var isNativeVolumeOn = false;
+
+        function on_native_volume_click() {
+          isNativeVolumeOn = !isNativeVolumeOn;
+          if (isNativeVolumeOn) {
+            document.getElementById("native_volume_off").style.display = "none";
+            document.getElementById("native_volume_on").style.display = "block";
+            video.muted = false;
+          } else {
+            document.getElementById("native_volume_off").style.display =
+              "block";
+            document.getElementById("native_volume_on").style.display = "none";
+            video.muted = true;
+          }
+        }
+
+        video.ontimeupdate = function () {
+          if (isPlay) {
+            if (video.currentTime > 10 && !isSwitched) {
+              console.log("isSwitched");
+              isSwitched = true;
+              window.top.postMessage(
+                { command: "probtn_start_animation" },
+                "*"
+              );
+            }
+          }
+
+          if (!isPlay) {
+            $("#native_video").css("opacity", 1);
+            var poster = document.getElementById("native_video_poster");
+            poster.style.display = "none";
+            isPlay = true;
+            window.parent.postMessage(
+              { command: "probtn_creative_loaded_message" },
+              "*"
+            );
+          }
+        };
+
+        video.onended = () => {
+          console.log(
+            "%conended",
+            "color: white; background: yellow;",
+            video.currentTime
+          );
+          window.top.postMessage({ command: "probtn_start_animation" }, "*");
+        };
+
+        function onAutoplayBlocked() {
+          var video_wrapper = document.getElementById("native_video_wrapper");
+          video_wrapper.style.display = "none";
+          load();
+        }
+
+        checkAutoPlay(video.play(), onAutoplayBlocked);
+
+        document.addEventListener("broadway_video_ended", () => {
+          window.top.postMessage({ command: "probtn_start_animation" }, "*");
+        });
+
+        var size = {
+          W: 480, //document.getElementsByTagName("canvas")[0].offsetWidth,
+          H: 270, //document.getElementsByTagName("canvas")[0].offsetHeight
+        };
+        console.log("size", size);
+      });
+    </script>
+    <script src="https://cdn.viewst.com/libs/hypeLoadEvent.js"></script>
+    <script src="https://cdn.viewst.com/libs/checkAutoPlay.js"></script>
+  </body>
+</html>

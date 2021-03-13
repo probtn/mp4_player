@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <title>Floating video</title>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <style>
+            body {
+                margin: 0px;
+                padding:  0px;
+            }
+        </style>
+    </head>
+    <body>
+        <img id="bg" src="" style="width: 100%; margin: 0px;" alt="bazaar.ru"/>
+        <script src="https://cdn.viewst.com/demos/all-site-backgrounds/bg-change.js"></script>
+        <script>
+            $(document).ready(function () {
+                $.getScript('//cdn.viewst.com/probtn.js', function () {
+                    // //cdn.probtn.com/probtn.js
+                    $(document).StartButton({
+                        'domain': 'demo.viewst.com',
+                        'CreativeId': '6023f793f5ddc20100000054',
+                        //ButtonImage: './button'
+                    });
+                });
+            });
+    </script>
+    </body>
+</html>
